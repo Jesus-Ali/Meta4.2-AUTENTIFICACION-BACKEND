@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "backenduser",
+    "password": "superpassword",
+    "database": "escolar2",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "backenduser",
+    "password": "superpasswordtest",
+    "database": "escolar2test",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "backenduser",
+    "password": "superpasswordproduction",
+    "database": "escolar2production",
+    "host": "localhost",
+    "dialect": "mysql"
+  }
+}
