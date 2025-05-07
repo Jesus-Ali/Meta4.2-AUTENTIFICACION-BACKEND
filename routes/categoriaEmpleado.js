@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { CategoriaEmpleado } = require('../models');
 
-// GET /categoria-empleado - Obtener todas las categorías
+// GET /categoriaempleado - Obtener todas las categorías
 router.get('/', async (req, res) => {
   try {
     const categorias = await CategoriaEmpleado.findAll();
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /categoria-empleado/:clave - Obtener una categoría por su clave
+// GET /categoriaempleado/:clave - Obtener una categoría por su clave
 router.get('/:clave', async (req, res) => {
   try {
     const categoria = await CategoriaEmpleado.findOne({ where: { clave: req.params.clave } });
@@ -25,7 +25,7 @@ router.get('/:clave', async (req, res) => {
   }
 });
 
-// POST /categoria-empleado - Crear una nueva categoría
+// POST /categoriaempleado - Crear una nueva categoría
 router.post('/', async (req, res) => {
   const { clave, nombre } = req.body;
 
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /categoria-empleado/:clave - Actualizar totalmente una categoría
+// PUT /categoriaempleado/:clave - Actualizar totalmente una categoría
 router.put('/:clave', async (req, res) => {
   const { nombre } = req.body;
 
@@ -63,7 +63,7 @@ router.put('/:clave', async (req, res) => {
   }
 });
 
-// DELETE /categoria-empleado/:clave - Eliminar una categoría
+// DELETE /categoriaempleado/:clave - Eliminar una categoría
 router.delete('/:clave', async (req, res) => {
   try {
     const categoria = await CategoriaEmpleado.findOne({ where: { clave: req.params.clave } });

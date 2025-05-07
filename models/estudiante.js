@@ -4,10 +4,7 @@ module.exports = (sequelize, DataTypes) => {
   class Estudiante extends Model {
     static associate(models) {
       Estudiante.belongsTo(models.Persona, { foreignKey: 'personaId' });
-      Estudiante.belongsToMany(models.Asignatura, {
-        through: models.Inscripcion,
-        foreignKey: 'estudianteId'
-      });
+      Estudiante.hasMany(models.Inscripcion, { foreignKey: 'estudianteId' });
     }
   }
   Estudiante.init({

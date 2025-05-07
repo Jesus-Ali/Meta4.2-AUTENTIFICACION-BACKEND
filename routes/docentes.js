@@ -6,7 +6,7 @@ const { Docente, Persona, CategoriaEmpleado, Asignatura } = require('../models')
 router.get('/', async (req, res) => {
   try {
     const docentes = await Docente.findAll({
-      include: [Persona, CategoriaEmpleado, Asignatura]
+      include: [Persona, CategoriaEmpleado]
     });
     res.json(docentes);
   } catch (err) {
@@ -19,7 +19,7 @@ router.get('/:numEmpleado', async (req, res) => {
   try {
     const docente = await Docente.findOne({
       where: { numEmpleado: req.params.numEmpleado },
-      include: [Persona, CategoriaEmpleado, Asignatura]
+      include: [Persona, CategoriaEmpleado]
     });
 
     if (!docente) {

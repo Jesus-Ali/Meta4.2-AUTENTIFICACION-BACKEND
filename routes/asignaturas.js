@@ -5,9 +5,7 @@ const { Asignatura, Estudiante, Docente } = require('../models');
 // GET /asignaturas - Obtener todas las asignaturas con estudiantes y docentes
 router.get('/', async (req, res) => {
   try {
-    const asignaturas = await Asignatura.findAll({
-      include: [Estudiante, Docente]
-    });
+    const asignaturas = await Asignatura.findAll();
     res.json(asignaturas);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener asignaturas' });
@@ -17,10 +15,7 @@ router.get('/', async (req, res) => {
 // GET /asignaturas/:clave - Obtener una asignatura por clave
 router.get('/:clave', async (req, res) => {
   try {
-    const asignatura = await Asignatura.findOne({
-      where: { clave: req.params.clave },
-      include: [Estudiante, Docente]
-    });
+    const asignatura = await Asignatura.findOne();
 
     if (!asignatura) {
       return res.status(404).json({ error: 'Asignatura no encontrada' });
