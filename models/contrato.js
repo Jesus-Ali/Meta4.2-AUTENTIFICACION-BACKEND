@@ -1,24 +1,30 @@
 'use strict';
-const { Model } = require('sequelize');
+const {
+  Model
+} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Contrato extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
     static associate(models) {
-      Contrato.belongsTo(models.Docente, { foreignKey: 'docenteId' });
-      Contrato.belongsTo(models.Asignatura, { foreignKey: 'asignaturaId' });
+      // define association here
+      Contrato.belongsTo(models.Docente, {
+        foreignKey: 'numEmpleado'
+      });
+      Contrato.belongsTo(models.Asignatura, {
+        foreignKey: 'clave'
+      });
     }
   }
   Contrato.init({
-    docenteId: DataTypes.INTEGER,
-    asignaturaId: DataTypes.INTEGER
+    docenteNumEmpleado: DataTypes.INTEGER,
+    asignaturaClave: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Contrato',
-    indexes: [
-      {
-        unique: true,
-        fields: ['docenteId', 'asignaturaId']
-      }
-    ]
   });
   return Contrato;
 };

@@ -13,15 +13,14 @@ router.get('/', async (req, res) => {
 });
 
 // GET /asignaturas/:clave - Obtener una asignatura por clave
-router.get('/:clave', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const asignatura = await Asignatura.findOne();
-
-    if (!asignatura) {
-      return res.status(404).json({ error: 'Asignatura no encontrada' });
+    const asignatura = await Asignatura.findByPk(req.params.id);
+    if(asignatura){
+      res.json(asignatura);
+    } else {
+      res.status(404).json({ error: 'Asignatura no encontrada'})
     }
-
-    res.json(asignatura);
   } catch (err) {
     res.status(500).json({ error: 'Error al buscar asignatura' });
   }
@@ -48,8 +47,34 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PATCH /asignaturas/:clave - Actualizar parcialmente una asignatura
-router.patch('/:clave', async (req, res) => {
+// PUT /asignaturas/:id - Reemplazar complatamente una asignatura
+router.put('/:id', async (req, res) => {
+  const { clave, nombre, creditos } = req.body;
+
+  if(!clave || !nombre || !creditos) {
+    return res.status(404).json({ error: 'clave, nombre y creditos son obligatorios'});
+  }
+
+  try {
+    const existente = await Asignatura.findOne({ where: { clave } });
+    if (existente) {
+      return res.status(409).json({ error: 'Ya existe una asignatura con esa clave' });
+    }
+
+    const asignatura = await Asignatura.findByPk(req.params.id);
+    if(!asignatura) {
+      return res.status(404).json({ error: 'Asignatura no encontrada'});
+    }
+
+    await asignatura.update({ clave, nombre, creditos});
+    res.json(asignatura);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar asignatura'});
+  }
+});
+
+// PATCH /asignaturas/:id - Actualizar parcialmente una asignatura
+router.patch('/:id', async (req, res) => {
   try {
     const asignatura = await Asignatura.findOne({ where: { clave: req.params.clave } });
 
@@ -64,8 +89,8 @@ router.patch('/:clave', async (req, res) => {
   }
 });
 
-// DELETE /asignaturas/:clave - Eliminar una asignatura
-router.delete('/:clave', async (req, res) => {
+// DELETE /asignaturas/:id - Eliminar una asignatura
+router.delete('/:id', async (req, res) => {
   try {
     const asignatura = await Asignatura.findOne({ where: { clave: req.params.clave } });
 

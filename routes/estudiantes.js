@@ -34,6 +34,11 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    const existente = await Asignatura.findOne({ where: { matricula } });
+    if (existente) {
+      return res.status(409).json({ error: 'Ya existe una asignatura con esa clave' });
+    }
+
     const nuevoEstudiante = await Estudiante.create({ matricula, personaId });
     res.status(201).json(nuevoEstudiante);
   } catch (err) {
