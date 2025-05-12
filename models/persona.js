@@ -9,6 +9,9 @@ module.exports = (sequelize, DataTypes) => {
       Persona.hasOne(models.Estudiante, {
         foreignKey: 'personaId'
       });
+      Persona.hasOne(models.Docente, {
+        foreignKey: 'personaId'
+      });
     }
   }
   Persona.init({

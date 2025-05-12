@@ -12,10 +12,24 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /asignaturas/:clave - Obtener una asignatura por clave
+// GET /asignaturas/:id - Obtener una asignatura por ID
 router.get('/:id', async (req, res) => {
   try {
     const asignatura = await Asignatura.findByPk(req.params.id);
+    if(asignatura){
+      res.json(asignatura);
+    } else {
+      res.status(404).json({ error: 'Asignatura no encontrada'})
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error al buscar asignatura' });
+  }
+});
+
+// GET /asignaturas/:clave - Obtener una asignatura por clave
+router.get('/:clave', async (req, res) => {
+  try {
+    const asignatura = await Asignatura.findByPk(req.params.clave);
     if(asignatura){
       res.json(asignatura);
     } else {

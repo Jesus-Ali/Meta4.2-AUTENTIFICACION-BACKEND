@@ -12,10 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Asignatura.hasOne(models.Inscripcion, {
-        foreignKey: 'clave'
+        foreignKey: 'asignaturaClave', sourceKey: 'clave'
       });
       Asignatura.hasOne(models.Contrato, {
-        foreignKey: 'clave'
+        foreignKey: 'asignaturaClave', sourceKey: 'clave'
       });
     }
   }

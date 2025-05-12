@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'personaId'
       });
       Estudiante.hasOne(models.Inscripcion, {
-        foreignKey: 'matricula'
+        foreignKey: 'estudianteMatricula', sourceKey: 'matricula'
       });
     }
   }

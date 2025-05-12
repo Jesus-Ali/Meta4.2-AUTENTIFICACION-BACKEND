@@ -12,7 +12,6 @@ module.exports = {
       estudianteMatricula: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        unique: true,
         references: {
           model:'Estudiantes',
           key:'matricula'
@@ -23,7 +22,6 @@ module.exports = {
       asignaturaClave: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        unique: true,
         references: {
           model:'Asignaturas',
           key:'clave'

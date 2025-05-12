@@ -12,10 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Inscripcion.belongsTo(models.Estudiante, {
-        foreignKey: 'matricula'
+        foreignKey: 'estudianteMatricula', targetKey: 'matricula'
       });
       Inscripcion.belongsTo(models.Asignatura, {
-        foreignKey: 'clave'
+        foreignKey: 'asignaturaClave', targetKey: 'clave'
       });
     }
   }
@@ -27,6 +27,8 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Inscripcion',
+    tableName: 'Inscripciones',
+  freezeTableName: true
   });
   return Inscripcion;
 };

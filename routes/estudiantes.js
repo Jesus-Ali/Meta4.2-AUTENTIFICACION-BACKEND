@@ -26,6 +26,25 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// GET /estudiantes/:matricula - Obtener un estudiante por matrícula
+router.get('/:matricula', async (req, res) => {
+  try {
+    // Buscar por matricula en lugar de por ID
+    const estudiante = await Estudiante.findOne({
+      where: { matricula: req.params.matricula },
+      include: Persona
+    });
+    if (estudiante) {
+      res.json(estudiante);
+    } else {
+      res.status(404).json({ error: 'Estudiante no encontrado' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error al buscar estudiante' });
+  }
+});
+
+
 // POST /estudiantes - Crear un nuevo estudiante
 router.post('/', async (req, res) => {
   const { matricula, personaId } = req.body;
@@ -34,9 +53,9 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const existente = await Asignatura.findOne({ where: { matricula } });
+    const existente = await Estudiante.findOne({ where: { matricula } });
     if (existente) {
-      return res.status(409).json({ error: 'Ya existe una asignatura con esa clave' });
+      return res.status(409).json({ error: 'Ya existe un estudiante con esa matricula' });
     }
 
     const nuevoEstudiante = await Estudiante.create({ matricula, personaId });

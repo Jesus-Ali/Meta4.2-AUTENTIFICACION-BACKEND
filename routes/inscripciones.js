@@ -10,18 +10,15 @@ router.get('/', async (req, res) => {
     });
     res.json(inscripciones);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al obtener inscripciones' });
   }
 });
 
-// GET /inscripciones/:estudianteId/:asignaturaId - Obtener inscripción específica
-router.get('/:estudianteId/:asignaturaId', async (req, res) => {
+// GET /inscripciones/:id - Obtener inscripción específica con relaciones
+router.get('/:id', async (req, res) => {
   try {
-    const inscripcion = await Inscripcion.findOne({
-      where: {
-        estudianteId: req.params.estudianteId,
-        asignaturaId: req.params.asignaturaId,
-      },
+    const inscripcion = await Inscripcion.findByPk(req.params.id, {
       include: [Estudiante, Asignatura],
     });
 
@@ -31,43 +28,64 @@ router.get('/:estudianteId/:asignaturaId', async (req, res) => {
 
     res.json(inscripcion);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al buscar inscripción' });
   }
 });
 
 // POST /inscripciones - Crear una nueva inscripción
 router.post('/', async (req, res) => {
-  const { estudianteId, asignaturaId, semestre, calificacion } = req.body;
+  const { estudianteMatricula, asignaturaClave, semestre, calificacion } = req.body;
 
-  if (!estudianteId || !asignaturaId) {
-    return res.status(400).json({ error: 'Faltan estudianteId o asignaturaId' });
+  if (!estudianteMatricula || !asignaturaClave || semestre == null || calificacion == null) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios: estudianteMatricula, asignaturaClave, semestre y calificacion' });
   }
 
   try {
-    const [inscripcion, creada] = await Inscripcion.findOrCreate({
-      where: { estudianteId, asignaturaId },
-      defaults: { semestre, calificacion },
-    });
-
-    if (!creada) {
-      return res.status(409).json({ error: 'La inscripción ya existe' });
+    const estudiante = await Estudiante.findOne({ where: { matricula: estudianteMatricula } });
+    if (!estudiante) {
+      return res.status(404).json({ error: 'Estudiante no encontrado' });
     }
 
-    res.status(201).json(inscripcion);
+    const asignatura = await Asignatura.findOne({ where: { clave: asignaturaClave } });
+    if (!asignatura) {
+      return res.status(404).json({ error: 'Asignatura no encontrada' });
+    }
+
+    const nuevaInscripcion = await Inscripcion.create({ estudianteMatricula, asignaturaClave, semestre, calificacion });
+    res.status(201).json(nuevaInscripcion);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al crear inscripción' });
   }
 });
 
-// PATCH /inscripciones/:estudianteId/:asignaturaId - Actualizar inscripción
-router.patch('/:estudianteId/:asignaturaId', async (req, res) => {
+// PUT /inscripciones/:id - Reemplazar completamente una inscripción
+router.put('/:id', async (req, res) => {
+  const { estudianteMatricula, asignaturaClave, semestre, calificacion } = req.body;
+
+  if (!estudianteMatricula || !asignaturaClave || semestre == null || calificacion == null) {
+    return res.status(400).json({ error: 'estudianteMatricula, asignaturaClave, semestre y calificacion son obligatorios' });
+  }
+
   try {
-    const inscripcion = await Inscripcion.findOne({
-      where: {
-        estudianteId: req.params.estudianteId,
-        asignaturaId: req.params.asignaturaId,
-      },
-    });
+    const inscripcion = await Inscripcion.findByPk(req.params.id);
+    if (!inscripcion) {
+      return res.status(404).json({ error: 'Inscripción no encontrada' });
+    }
+
+    await inscripcion.update({ estudianteMatricula, asignaturaClave, semestre, calificacion });
+    res.json(inscripcion);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al actualizar inscripción' });
+  }
+});
+
+// PATCH /inscripciones/:id - Actualizar parcialmente una inscripción
+router.patch('/:id', async (req, res) => {
+  try {
+    const inscripcion = await Inscripcion.findByPk(req.params.id);
 
     if (!inscripcion) {
       return res.status(404).json({ error: 'Inscripción no encontrada' });
@@ -76,19 +94,15 @@ router.patch('/:estudianteId/:asignaturaId', async (req, res) => {
     await inscripcion.update(req.body);
     res.json(inscripcion);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al actualizar inscripción' });
   }
 });
 
-// DELETE /inscripciones/:estudianteId/:asignaturaId - Eliminar inscripción
-router.delete('/:estudianteId/:asignaturaId', async (req, res) => {
+// DELETE /inscripciones/:id - Eliminar inscripción por ID
+router.delete('/:id', async (req, res) => {
   try {
-    const inscripcion = await Inscripcion.findOne({
-      where: {
-        estudianteId: req.params.estudianteId,
-        asignaturaId: req.params.asignaturaId,
-      },
-    });
+    const inscripcion = await Inscripcion.findByPk(req.params.id);
 
     if (!inscripcion) {
       return res.status(404).json({ error: 'Inscripción no encontrada' });
@@ -97,6 +111,7 @@ router.delete('/:estudianteId/:asignaturaId', async (req, res) => {
     await inscripcion.destroy();
     res.status(204).end();
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al eliminar inscripción' });
   }
 });
