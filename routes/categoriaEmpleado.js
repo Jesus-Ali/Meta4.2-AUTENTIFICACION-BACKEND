@@ -12,14 +12,15 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /categoriaempleado/:clave - Obtener una categoría por su clave
-router.get('/:clave', async (req, res) => {
+// GET /categoriaempleado/:id - Obtener una categoría por su ID
+router.get('/:id', async (req, res) => {
   try {
-    const categoria = await CategoriaEmpleado.findOne({ where: { clave: req.params.clave } });
-    if (!categoria) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
+    const categoria = await CategoriaEmpleado.findByPk(req.params.id);
+    if (categoria) {
+      res.json(categoria);
+    } else {
+      res.status(404).json({ error: 'Categoria no encontrada'});
     }
-    res.json(categoria);
   } catch (err) {
     res.status(500).json({ error: 'Error al buscar categoría' });
   }
@@ -46,27 +47,45 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /categoriaempleado/:clave - Actualizar totalmente una categoría
-router.put('/:clave', async (req, res) => {
-  const { nombre } = req.body;
+// PUT /categoriaempleado/:id - Actualizar totalmente una categoría
+router.put('/:id', async (req, res) => {
+  const { clave, nombre } = req.body;
+  if( !clave || !nombre){
+    return res.status(400).json({ error: 'Clave y nombre son obligatorios'});
+  }
 
   try {
-    const categoria = await CategoriaEmpleado.findOne({ where: { clave: req.params.clave } });
+    const categoria = await CategoriaEmpleado.findByPk(req.params.id);
     if (!categoria) {
       return res.status(404).json({ error: 'Categoría no encontrada' });
     }
 
-    await categoria.update({ nombre });
+    await categoria.update({ clave, nombre });
     res.json(categoria);
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar categoría' });
   }
 });
 
-// DELETE /categoriaempleado/:clave - Eliminar una categoría
-router.delete('/:clave', async (req, res) => {
+// PATCH /categoriaempleado/:id - Actualizar parcialmente una categoria
+router.patch('/:id', async (req, res) => {
+  try{
+    const categoria = await CategoriaEmpleado.findByPk(req.params.id);
+    if (!categoria) {
+      return res.status(404).json({ error: 'Categoria no encontrada'});
+    }
+
+    await categoria.update(req.body);
+    res.json(categoria);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar categoria'});
+  }
+});
+
+// DELETE /categoriaempleado/:id - Eliminar una categoría
+router.delete('/:id', async (req, res) => {
   try {
-    const categoria = await CategoriaEmpleado.findOne({ where: { clave: req.params.clave } });
+    const categoria = await CategoriaEmpleado.findByPk(req.params.id);
     if (!categoria) {
       return res.status(404).json({ error: 'Categoría no encontrada' });
     }

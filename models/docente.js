@@ -15,10 +15,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'personaId'
       });
       Docente.belongsTo(models.CategoriaEmpleado, {
-        foreignKey: 'categoriaEmpleadoClave'
+        foreignKey: 'categoriaEmpleadoClave', targetKey: 'clave'
       });
       Docente.hasOne(models.Contrato, {
-        foreignKey: 'docenteNumEmpleado'
+        foreignKey: 'docenteNumEmpleado', sourceKey: 'numEmpleado'
       })
     }
   }

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Docente, Persona, CategoriaEmpleado, Asignatura } = require('../models');
+const { Docente, Persona, CategoriaEmpleado } = require('../models');
 
 // GET /docentes - Obtener todos los docentes con relaciones
 router.get('/', async (req, res) => {
@@ -14,13 +14,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /docentes/:numEmpleado - Obtener un docente por número de empleado
-router.get('/:numEmpleado', async (req, res) => {
+// GET /docentes/:id - Obtener un docente por ID
+router.get('/:id', async (req, res) => {
   try {
-    const docente = await Docente.findOne({
-      where: { numEmpleado: req.params.numEmpleado },
-      include: [Persona, CategoriaEmpleado]
-    });
+    const docente = await Docente.findByPk(req.params.id);
 
     if (!docente) {
       return res.status(404).json({ error: 'Docente no encontrado' });
@@ -28,15 +25,16 @@ router.get('/:numEmpleado', async (req, res) => {
 
     res.json(docente);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al buscar docente' });
   }
 });
 
 // POST /docentes - Crear un nuevo docente
 router.post('/', async (req, res) => {
-  const { numEmpleado, personaId, categoriaEmpleadoId } = req.body;
+  const { numEmpleado, personaId, categoriaEmpleadoClave } = req.body;
 
-  if (!numEmpleado || !personaId || !categoriaEmpleadoId) {
+  if (!numEmpleado || !personaId || !categoriaEmpleadoClave) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
 
@@ -46,17 +44,39 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ error: 'Ya existe un docente con ese número de empleado' });
     }
 
-    const nuevo = await Docente.create({ numEmpleado, personaId, categoriaEmpleadoId });
+    const nuevo = await Docente.create({ numEmpleado, personaId, categoriaEmpleadoClave });
     res.status(201).json(nuevo);
   } catch (err) {
     res.status(500).json({ error: 'Error al crear docente' });
   }
 });
 
-// PATCH /docentes/:numEmpleado - Actualizar parcialmente un docente
-router.patch('/:numEmpleado', async (req, res) => {
+// PUT /docentes/:id - Reemplazar completamente un docente
+router.put('/:id', async (req, res) => {
+  const { numEmpleado, personaId, categoriaEmpleadoClave } = req.body;
+
+  if ( !numEmpleado || !personaId || categoriaEmpleadoClave) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios'});
+  }
+
   try {
-    const docente = await Docente.findOne({ where: { numEmpleado: req.params.numEmpleado } });
+    const docente = await Docente.findByPk(req.params.id);
+    if(!docente){
+      return res.status(404).json({ error: 'Docente no encontrado'});
+    }
+
+    await docente.update({ numEmpleado, personaId, categoriaEmpleadoClave });
+    res.json(docente);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al actualizar docente'});
+  }
+});
+
+// PATCH /docentes/:id - Actualizar parcialmente un docente
+router.patch('/:id', async (req, res) => {
+  try {
+    const docente = await Docente.findByPk(req.params.id);
 
     if (!docente) {
       return res.status(404).json({ error: 'Docente no encontrado' });
@@ -65,14 +85,15 @@ router.patch('/:numEmpleado', async (req, res) => {
     await docente.update(req.body);
     res.json(docente);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al actualizar docente' });
   }
 });
 
-// DELETE /docentes/:numEmpleado - Eliminar un docente
-router.delete('/:numEmpleado', async (req, res) => {
+// DELETE /docentes/:id - Eliminar un docente
+router.delete('/:id', async (req, res) => {
   try {
-    const docente = await Docente.findOne({ where: { numEmpleado: req.params.numEmpleado } });
+    const docente = await Docente.findByPk(req.params.id);
 
     if (!docente) {
       return res.status(404).json({ error: 'Docente no encontrado' });

@@ -26,20 +26,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// GET /asignaturas/:clave - Obtener una asignatura por clave
-router.get('/:clave', async (req, res) => {
-  try {
-    const asignatura = await Asignatura.findByPk(req.params.clave);
-    if(asignatura){
-      res.json(asignatura);
-    } else {
-      res.status(404).json({ error: 'Asignatura no encontrada'})
-    }
-  } catch (err) {
-    res.status(500).json({ error: 'Error al buscar asignatura' });
-  }
-});
-
 // POST /asignaturas - Crear una nueva asignatura
 router.post('/', async (req, res) => {
   const { clave, nombre, creditos } = req.body;
@@ -70,11 +56,6 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const existente = await Asignatura.findOne({ where: { clave } });
-    if (existente) {
-      return res.status(409).json({ error: 'Ya existe una asignatura con esa clave' });
-    }
-
     const asignatura = await Asignatura.findByPk(req.params.id);
     if(!asignatura) {
       return res.status(404).json({ error: 'Asignatura no encontrada'});
@@ -90,7 +71,7 @@ router.put('/:id', async (req, res) => {
 // PATCH /asignaturas/:id - Actualizar parcialmente una asignatura
 router.patch('/:id', async (req, res) => {
   try {
-    const asignatura = await Asignatura.findOne({ where: { clave: req.params.clave } });
+    const asignatura = await Asignatura.findByPk(req.params.id);
 
     if (!asignatura) {
       return res.status(404).json({ error: 'Asignatura no encontrada' });
@@ -106,7 +87,7 @@ router.patch('/:id', async (req, res) => {
 // DELETE /asignaturas/:id - Eliminar una asignatura
 router.delete('/:id', async (req, res) => {
   try {
-    const asignatura = await Asignatura.findOne({ where: { clave: req.params.clave } });
+    const asignatura = await Asignatura.findByPk(req.params.id);
 
     if (!asignatura) {
       return res.status(404).json({ error: 'Asignatura no encontrada' });

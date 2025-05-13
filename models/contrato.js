@@ -12,11 +12,15 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Contrato.belongsTo(models.Docente, {
-        foreignKey: 'categoriaEmpleadoClave'
+        foreignKey: 'docenteNumEmpleado', // Este es el nombre del campo en la tabla Contratos
+        targetKey: 'numEmpleado'          // Este es el campo en la tabla Docentes
       });
+
       Contrato.belongsTo(models.Asignatura, {
-        foreignKey: 'asignaturaClave'
+        foreignKey: 'asignaturaClave',    // Campo en Contratos
+        targetKey: 'clave'                // Campo en Asignaturas
       });
+
     }
   }
   Contrato.init({
