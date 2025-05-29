@@ -17,6 +17,10 @@ router.get('/', (req, res) => {
 // Cargar authRoutes primero
 router.use('/auth', require('./authRoutes'));
 
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
+
 // Cargar otras rutas dinámicamente
 fs.readdirSync(routesDir)
   .filter(file => {

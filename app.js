@@ -7,6 +7,9 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
 const https = require('https');
 const fs = require('fs');
 const { sequelize } = require('./models');
@@ -28,17 +31,16 @@ const sslOptions = {
   }
 })();
 
+app.use(cookieParser());
+
 // CORS configuration - updated for HTTPS
 app.use(cors({
   origin: 'https://localhost:3000', // Changed to HTTPS
-  credentials: true
+  credentials: true,
+  exposedHeaders: ['X-XSRF-TOKEN']
 }));
-
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Trust proxy for secure cookies in production
 app.set('trust proxy', 1);
 
 // Session configuration - updated for HTTPS
@@ -87,56 +89,43 @@ passport.use(new LocalStrategy(
 
 // Google Strategy - updated with proper error handling
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "https://localhost:3000/auth/google/callback",
-    passReqToCallback: true
-  },
-  async (req, accessToken, refreshToken, profile, done) => {
-    try {
-      // Check if user exists by googleId
-      let user = await sequelize.models.Usuarios.findOne({ 
-        where: { googleId: profile.id } 
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "/auth/google/callback",
+  passReqToCallback: true
+},
+async (req, accessToken, refreshToken, profile, done) => {
+  try {
+    let user = await sequelize.models.Usuarios.findOne({ 
+      where: { googleId: profile.id } 
+    });
+
+    if (!user) {
+      user = await sequelize.models.Usuarios.create({
+        email: profile.emails[0].value,
+        googleId: profile.id,
+        nombre: profile.displayName,
+        verificado: true
       });
-
-      if (!user) {
-        // Check if email exists (for users who might have signed up locally first)
-        user = await sequelize.models.Usuarios.findOne({
-          where: { email: profile.emails[0].value }
-        });
-
-        if (user) {
-          // Update existing user with googleId
-          user.googleId = profile.id;
-          await user.save();
-        } else {
-          // Create new user
-          user = await sequelize.models.Usuarios.create({
-            email: profile.emails[0].value,
-            googleId: profile.id,
-            verificado: true
-          });
-        }
-      }
-
-      return done(null, user);
-    } catch (err) {
-      console.error('Google auth error:', err);
-      return done(err);
     }
+    return done(null, user);
+  } catch (err) {
+    return done(err);
   }
-));
+}));
 
-// Serialization/Deserialization
+// Serialization
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, {
+    id: user.id,
+    email: user.email,
+    googleId: user.googleId
+  });
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (obj, done) => {
   try {
-    const user = await sequelize.models.Usuarios.findByPk(id, {
-      attributes: ['id', 'email', 'googleId']
-    });
+    const user = await sequelize.models.Usuarios.findByPk(obj.id);
     done(null, user);
   } catch (err) {
     done(err);
@@ -146,13 +135,22 @@ passport.deserializeUser(async (id, done) => {
 // Routes
 app.use('/', require('./routes'));
 
-// Error handler
+// Error Handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: '¡Algo salió mal!' });
+  
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({ error: 'Token expired' });
+  }
+  
+  res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start HTTPS server
+// Start Server
 const PORT = process.env.PORT || 3000;
 https.createServer(sslOptions, app).listen(PORT, () => {
   console.log(`Server running on https://localhost:${PORT}`);
