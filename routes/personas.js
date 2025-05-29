@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { Persona } = require('../models');
+const { asegurarAutenticacion } = require('../middleware/auth');
+
+// Todas las rutas de personas requieren autenticación
+router.use(asegurarAutenticacion);
 
 // GET /personas - Obtener todas las personas
 router.get('/', async (req, res) => {
@@ -11,6 +15,8 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener personas' });
   }
 });
+
+// Resto de tus rutas permanecen igual pero protegidas
 
 // GET /personas/:id - Obtener persona por ID
 router.get('/:id', async (req, res) => {

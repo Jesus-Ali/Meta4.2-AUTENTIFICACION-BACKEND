@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { Inscripcion, Estudiante, Asignatura, Persona } = require('../models');
+const { asegurarAutenticacion } = require('../middleware/auth');
+
+router.use(asegurarAutenticacion);
 
 // GET /inscripciones - Obtener todas las inscripciones con relaciones
 router.get('/', async (req, res) => {

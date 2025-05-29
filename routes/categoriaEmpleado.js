@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { CategoriaEmpleado } = require('../models');
+const { asegurarAutenticacion } = require('../middleware/auth');
+
+router.use(asegurarAutenticacion);
 
 // GET /categoriaempleado - Obtener todas las categorías
 router.get('/', async (req, res) => {

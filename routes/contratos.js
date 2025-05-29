@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { Contrato, Docente, Asignatura, Persona } = require('../models');
+const { asegurarAutenticacion } = require('../middleware/auth');
+
+router.use(asegurarAutenticacion);
 
 // GET /contratos - Obtener todos los contratos con relaciones
 router.get('/', async (req, res) => {

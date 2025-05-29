@@ -1,4 +1,3 @@
-// routes/index.js
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -8,15 +7,23 @@ const routesDir = path.join(__dirname);
 
 // Ruta principal
 router.get('/', (req, res) => {
-  res.send('API de Estudiantes y Personas - Bienvenido');
+  res.json({ 
+    message: 'API - Bienvenido',
+    autenticado: req.isAuthenticated(),
+    usuario: req.user || null
+  });
 });
 
-// Leer todos los archivos de rutas en el directorio
+// Cargar authRoutes primero
+router.use('/auth', require('./authRoutes'));
+
+// Cargar otras rutas dinámicamente
 fs.readdirSync(routesDir)
   .filter(file => {
     return (
       file.endsWith('.js') &&
-      file !== 'index.js' // No nos importamos a nosotros mismos
+      file !== 'index.js' &&
+      file !== 'authRoutes.js'
     );
   })
   .forEach(file => {

@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { Estudiante, Persona } = require('../models');
+const { asegurarAutenticacion } = require('../middleware/auth');
+
+router.use(asegurarAutenticacion);
 
 // GET /estudiantes - Obtener todos los estudiantes
 router.get('/', async (req, res) => {
