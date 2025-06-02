@@ -4,7 +4,6 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const cookieParser = require('cookie-parser');
 const { Usuarios } = require('../models');
 const { verifyCSRF } = require('../middleware/auth');
 
@@ -34,14 +33,14 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
     secure: true,
     sameSite: 'lax',
     maxAge: 3600000,
-    domain: 'localhost'
+    // domain: 'localhost'
   });
 
   res.cookie("XSRF-TOKEN", xsrfToken, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
-      domain: "localhost",
+      // domain: "localhost",
       path: "/",
       maxAge: 3600000, // 15 minutos
   });
@@ -56,36 +55,15 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 });
 
 // Logout
-router.get('/logout', (req, res) => {
-  // Passport.js logout with callback
-  req.logout(function(err) {
-    if (err) { 
-      return res.status(500).json({ error: 'Error during logout' });
-    }
-    
-    // Clear all auth cookies (must match original cookie settings)
-    res.clearCookie('connect.sid', {
-      path: '/',
-      domain: 'localhost'
-    });
-    
-    res.clearCookie('auth_token', {
-      path: '/',
-      domain: 'localhost'
-    });
-    
-    res.clearCookie('XSRF-TOKEN', {
-      path: '/',
-      domain: 'localhost'
-    });
-    
-    // Optionally destroy session
-    req.session.destroy(() => {
-      res.redirect('https://localhost:3000/');
-      res.status(204).end(); // No content response for successful logout
-    });
+router.post('/logout', (req, res) => {
+  res.clearCookie('auth_token');
+  res.clearCookie('connect.sid');
+  res.clearCookie('XSRF-TOKEN');
+  req.session?.destroy?.(() => {
+    res.status(204).json({ message: "Sesión cerrada" });
   });
 });
+
 
 // Registration
 router.post('/registro', async (req, res) => {
@@ -102,24 +80,26 @@ router.post('/registro', async (req, res) => {
       contraseña: hashedPassword
     });
 
-    req.login(user, (err) => {
+    req.login(usuario, (err) => {
       if (err) throw err;
-      const { authToken, xsrfToken } = generateTokens(user);
+
+      const { authToken, xsrfToken } = generateTokens(usuario);
 
       res.cookie('auth_token', authToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
-        maxAge: 3600000,
-        domain: 'localhost'
+        maxAge: 3600000
       });
-      
+
       res.status(201).json({
-      id: usuario.id,
-      email: usuario.email
+        id: usuario.id,
+        email: usuario.email,
+        xsrfToken
       });
     });
   } catch (err) {
+    console.error('Error en el registro:', err);
     if (err.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
@@ -129,28 +109,20 @@ router.post('/registro', async (req, res) => {
 
 // Check authentication status
 router.get('/sesion', (req, res) => {
-  // if (req.isAuthenticated()) {
-  //   return res.json({
-  //     autenticado: true,
-  //     usuario: {
-  //       id: req.user.id,
-  //       email: req.user.email,
-  //       googleId: req.user.googleId
-  //     }
-  //   });
-  // }
-
   const token = req.cookies.auth_token;
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
-      res.json({autenticado: true, user: decoded});
+      return res.json({ autenticado: true, user: decoded });
     } catch (err) {
-      res.status(401).json({ error: "Token inválido o expirado" });
+      return res.status(401).json({ error: "Token inválido o expirado" });
     }
   }
-  res.json({ autenticado: false });
+
+  // Aquí responde cuando NO hay token:
+  return res.status(401).json({ autenticado: false, error: "No autenticado" });
 });
+
 
 // Google Authentication Routes
 router.get('/google', passport.authenticate('google', { 
@@ -168,20 +140,20 @@ router.get('/google/callback',
     secure: true,
     sameSite: 'lax',
     maxAge: 3600000,
-    domain: 'localhost'
+    // domain: 'localhost'
   });
 
   res.cookie("XSRF-TOKEN", xsrfToken, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
-      domain: "localhost",
+      // domain: "localhost",
       path: "/",
       maxAge: 3600000, // 15 minutos
   });
 
     // Successful authentication
-    res.redirect('https://localhost:3000/');
+    res.redirect('http://localhost:5173/');
   }
 );
 

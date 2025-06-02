@@ -35,7 +35,7 @@ app.use(cookieParser());
 
 // CORS configuration - updated for HTTPS
 app.use(cors({
-  origin: 'https://localhost:3000', // Changed to HTTPS
+  origin: 'http://localhost:5173', // Changed to HTTPS
   credentials: true,
   exposedHeaders: ['X-XSRF-TOKEN']
 }));
